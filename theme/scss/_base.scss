@@ -9,6 +9,11 @@
 @import "compass/css3/transform";
 @import "compass/css3/transition";
 
+$slide-width: 900px;
+$slide-height: 700px;
+$slide-width-widescreen: 1100px;
+$slide-margin: 20px;
+
 @mixin font-smoothing($val: antialiased) {
   -webkit-font-smoothing: $val;
   -moz-font-smoothing: $val;
@@ -80,15 +85,23 @@ slides > slide[hidden] {
 }
 
 slides {
-  width: 100%;
-  height: 100%;
+  width: $slide-width+2*$slide-margin;
+  height: $slide-height+2*$slide-margin;
+  margin-left: -($slide-width+2*$slide-margin) / 2;
+  margin-top: -($slide-height+2*$slide-margin) / 2;
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 50%;
+  top: 50%;
   @include transform(translate3d(0, 0, 0));
   @include perspective(1000);
   @include transform-style(preserve-3d);
   @include transition(opacity 800ms ease-in 100ms); // Add small delay to prevent jank.
+  
+  &.layout-widescreen,
+  &.layout-faux-widescreen {
+	  width: ($slide-width-widescreen+2*$slide-margin);
+	  margin-left: -($slide-width-widescreen+2*$slide-margin) / 2;
+  }
 }
 
 slides > slide {
