@@ -65,7 +65,7 @@ SlideDeck.prototype.loadSlide = function(slideNo) {
 SlideDeck.prototype.onDomLoaded_ = function(e) {
   document.body.classList.add('loaded'); // Add loaded class for templates to use.
 
-  this.slides = this.container.querySelectorAll('slide:not([hidden]):not(.backdrop)');
+  this.slides = this.container.querySelectorAll('slide:not([hidden]):not(.hidden):not(.backdrop)');
 
   // If we're on a smartphone, apply special sauce.
   if (Modernizr.mq('only screen and (max-device-width: 480px)')) {
@@ -102,13 +102,16 @@ SlideDeck.prototype.onDomLoaded_ = function(e) {
 
   // Note: this needs to come after addEventListeners_(), which adds a
   // 'keydown' listener that this controller relies on.
-  // Also, no need to set this up if we're on mobile.
-  if (!Modernizr.touch) {
+
+  // Modernizr.touch isn't a sufficient check for devices that support both
+  // touch and mouse. Create the controller in all cases.
+  // // Also, no need to set this up if we're on mobile.
+  // if (!Modernizr.touch) {
     this.controller = new SlideController(this);
     if (this.controller.isPopup) {
       document.body.classList.add('popup');
     }
-  }
+  //}
 };
 
 /**
@@ -315,7 +318,10 @@ SlideDeck.prototype.loadConfig_ = function(config) {
   }
 
   if (settings.title) {
-    document.title = settings.title.replace(/<br\/?>/, ' ') + ' - Google IO 2012';
+    document.title = settings.title.replace(/<br\/?>/, ' ');
+    if (settings.eventInfo && settings.eventInfo.title) {
+      document.title +=  ' - ' + settings.eventInfo.title;
+    }
     document.querySelector('[data-config-title]').innerHTML = settings.title;
   }
 
@@ -331,7 +337,11 @@ SlideDeck.prototype.loadConfig_ = function(config) {
     if (presenters.length == 1) {
       var p = presenters[0];
 
-      html = [p.name, p.company].join('<br>');
+      var presenterTitle = [p.name];
+      if (p.company) {
+        presenterTitle.push(p.company);
+      }
+      html = presenterTitle.join(' - ') + '<br>';
 
       var gplus = p.gplus ? '<span>g+</span><a href="' + p.gplus +
           '">' + p.gplus.replace(/https?:\/\//, '') + '</a>' : '';
@@ -363,7 +373,12 @@ SlideDeck.prototype.loadConfig_ = function(config) {
 
     var dataConfigPresenter = document.querySelector('[data-config-presenter]');
     if (dataConfigPresenter) {
-      document.querySelector('[data-config-presenter]').innerHTML = html;
+      dataConfigPresenter.innerHTML = html;
+      if (settings.eventInfo) {
+        var date = settings.eventInfo.date;
+        var dateInfo = date ? ' - <time>' + date + '</time>' : '';
+        dataConfigPresenter.innerHTML += settings.eventInfo.title + dateInfo;
+      }
     }
   }
 
